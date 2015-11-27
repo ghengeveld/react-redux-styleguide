@@ -174,18 +174,18 @@ prefer the functional approach, which is why using classes is discouraged. Downs
 - Expose secondary functions as named exports for unit testing.
 - Never export anonymous (arrow) functions.
 
-React components come in two flavors: presentation components and container components, also known as dumb vs smart
-components. We simply refer to them as 'components' and 'containers'.
+React components come in two flavors: presentation components and container components, also known as [dumb vs smart
+components]. We simply refer to them as 'components' and 'containers'.
 
 React v0.14 introduced a new way to write components. In the past we would write every component as a class. However,
 since presentation components are very lightweight, they don't need all the power that a class provides (i.e. lifecycle
 methods and state).
 
-The new way to write components uses a function instead of a class. Components defined that way are known as 'functional
-stateless components' because they cannot have any state and they are pure functions. This means they will receive their
-props as an argument and must return the rendered component. It basically boils down to having only a render method,
-which receives the props as an argument rather than accessing it as a class property. They also receive context as a
-second argument.
+The new way to write components uses a function instead of a class. Components defined that way are known as
+'[functional stateless components][fsc]' because they cannot have any state and they are pure functions. This means they
+will receive their props as an argument and must return the rendered component. It basically boils down to having only a
+render method, which receives the props as an argument rather than accessing it as a class property. They also receive
+context as a second argument.
 
 Each component or container should be inside its own directory. This reduces the clutter when components use CSS and
 other related files. By using `index.js` you won't have to change any import statements when you migrate from a file to
@@ -204,6 +204,9 @@ export default class TodoList extends React.Component {
   }
 }
 ```
+
+[dump vs smart components]: https://medium.com/@dan_abramov/smart-and-dumb-components-7ca2f9a7c7d0
+[fsc]: https://facebook.github.io/react/blog/2015/10/07/react-v0.14.html#stateless-functional-components
 
 ## Redux
 
