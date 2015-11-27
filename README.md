@@ -79,33 +79,49 @@ const baz = 'baz';
 - Declare each variable as a full statement. It avoids the dangling comma discussion.
 - Separate logical chunks of code with an empty line.
 
+```js
+const foo = 'foo';
+const bar = 'bar';
+// use foo and bar
+
+const baz = 'baz';
+// use baz
+
+const qux = 'qux';
+// use qux
+```
+
 Common practice with `var` was to put all declarations at the top of their scope, even if they would only be used much
 further down. The reason for this is that `var` declarations are automatically hoisted to the top of their scope, so
 putting them there yourself makes the code more predictable. However, `let` and `const` are not hoisted. Therefore there
 is no reason to 'hoist' them yourself. Generally it's better to declare variables just-in-time, right before the spot
 where you are going to use them. This makes the code easier to follow. You won't have to go looking for usages before
-they are defined, because they can't be used there. Finally, it makes it easier to extract a bunch of statements into a
+they are defined, because they can't be used there. It also makes it easier to extract a bunch of statements into a
 function, which is a great way to improve readability even more.
-
-Now that variables are declared where they are used, add some whitespace between them:
-
-```
-declare var1
-declare var2
-use var1, var2
-
-declare var3
-use var3
-
-declare var4
-use var4
-```
 
 ### Arrow functions
 
 - Consider anonymous functions deprecated. We have arrow functions for that now.
 - Use arrow functions only as part of a larger (named) entity, not as a stand-alone entity.
 - Declare functions after using them by leveraging function hoisting.
+
+```js
+// deprecated
+function (string) {
+  return string.toLocaleUpperCase();
+}
+
+// recommended
+function upper(string) {
+  return string.toLocaleUpperCase();
+}
+
+// use wisely
+string => string.toLocaleUpperCase()
+
+// if it fits your style
+const upper = string => string.toLocaleUpperCase()
+```
 
 With the addition of the arrow function syntax, we have gained a very elegant and convenient way to define anonymous
 functions. Because they use 'lexical this', usage of `this` is more predictable. Therefore you should use arrows instead
@@ -146,6 +162,29 @@ one-liner. Using a named function here would require at least three lines of cod
 - Don't cause any side effects by running a function.
 - Don't mutate any passed arguments, return a new value instead.
 
+```js
+// avoid side-effects
+let x;
+function inc() {
+  x++;
+}
+
+// recommended
+function inc(x) {
+  return x + 1;
+}
+
+// avoid mutation
+function inc(object) {
+  object.value++;
+}
+
+// recommended
+function inc(object) {
+  return { ...object, value: object.value + 1 };
+}
+```
+
 A sure way to reduce code complexity and enhance testability and readability is to keep your functions [pure]. This is
 one of the primary aspects of functional programming. It involves writing functions in a purely input-output fashion.
 Pure functions only work with the data they are given through their arguments and return some new data, without causing
@@ -184,6 +223,20 @@ prefer the functional approach, which is why using classes is discouraged. Downs
 - Expose secondary functions as named exports for unit testing.
 - Never export anonymous (arrow) functions.
 
+```js
+// components/TodoItem/index.js
+export default function TodoItem(props, context) {
+  return <li onClick={() => context.onTodoClick()}>{props.label}</li>;
+}
+
+// containers/TodoList/index.js
+export default class TodoList extends React.Component {
+  render() {
+    return <ul>{this.props.todos.map(todo => <TodoItem {...todo} />)}</ul>;
+  }
+}
+```
+
 React components come in two flavors: presentation components and container components, also known as [dumb vs smart
 components]. We simply refer to them as 'components' and 'containers'.
 
@@ -200,20 +253,6 @@ context as a second argument.
 Each component or container should be inside its own directory. This reduces the clutter when components use CSS and
 other related files. By using `index.js` you won't have to change any import statements when you migrate from a file to
 a folder with the same name. If you import a folder, `index.js` is inferred.
-
-```js
-// components/TodoItem/index.js
-export default function TodoItem(props, context) {
-  return <li onClick={() => context.onTodoClick()}>{props.label}</li>;
-}
-
-// containers/TodoList/index.js
-export default class TodoList extends React.Component {
-  render() {
-    return <ul>{this.props.todos.map(todo => <TodoItem {...todo} />)}</ul>;
-  }
-}
-```
 
 [dump vs smart components]: https://medium.com/@dan_abramov/smart-and-dumb-components-7ca2f9a7c7d0
 [fsc]: https://facebook.github.io/react/blog/2015/10/07/react-v0.14.html#stateless-functional-components
@@ -239,9 +278,6 @@ return <TodoItem {...{ label, completed, onTodoClick }} />
 - Expose each action creator as a named export.
 - Don't use a default export.
 
-Action creators are functions which return an action object. An action object contains a type and optionally a payload
-and metadata. Action objects should follow the [Flux Standard Action] schema.
-
 ```js
 // actions/something.js
 export function doSomething() {
@@ -252,6 +288,9 @@ export function doSomething() {
   };
 }
 ```
+
+Action creators are functions which return an action object. An action object contains a type and optionally a payload
+and metadata. Action objects should follow the [Flux Standard Action] schema.
 
 We could also use the createAction helper of redux-actions, but other than enforcing FSA it doesn't do much here in
 terms of reducing boilerplate. In fact createAction is less readable and doesn't let us easily export named functions
@@ -271,6 +310,29 @@ guide still follows the group-by-type pattern, but may move towards using ducks 
 
 ### Reducers
 
+- Expose reducers as the default export.
+- Expose handlers as named exports for unit testing.
+- Use constants instead of inline strings for action types.
+- Always define an `initialState` variable.
+
+```js
+// using redux-actions
+
+// reducers/something.js
+import { handleActions } from 'redux-actions';
+import { Todo } from '../constants/actionTypes';
+
+const initialState = {};
+
+export default handleActions({
+  [Todo.add]: addTodo
+}, initialState);
+
+export function addTodo(state, action) {
+  return { ...state, todo: action.payload.todo };
+}
+```
+
 A reducer handles incoming actions. All reducers are triggered for all actions, so it's up to each reducer to decide
 whether or not to act on the incoming action. This is commonly done by switching on the action type. Reducers receive
 a current state and an action object and must return a new (updated or not) state. Their function signature is as
@@ -289,24 +351,6 @@ The simplest way to create a reducer is to use the handleActions method of redux
 switch statement and a default handler. Another benefit is that is enforces the use of FSA-compliant action objects. The
 final reducer should be exposed as the default export. Individual handler functions should be exposed as named exports
 in order to simplify unit testing.
-
-```js
-// using redux-actions
-
-// reducers/something.js
-import { handleActions } from 'redux-actions';
-import { Example } from '../constants/actionTypes';
-
-const initialState = {};
-
-export default handleActions({
-  [Example.doSomething]: doSomething
-}, initialState);
-
-export function doSomething(state, action) {
-  return { ...state, value: action.payload.value };
-}
-```
 
 ### Connecting React components
 
@@ -334,19 +378,6 @@ The [reselect] library works well for more complex selectors and to achieve bett
 - Declare helper functions underneath the methods, in chronological order.
 - Never export anonymous (arrow) functions.
 
-A service is where you commonly do AJAX requests to the back-end. All service methods should return a promise, even if
-the result is calculated synchronously. This ensures a consistent and predictable API across all services and allows
-changing to an asynchronous implementation later, without having to update service method calls all over the codebase.
-
-Services should expose themselves via a default export to allow consumers to import the service as a whole. The reason
-for this is that multiple services may expose the same generic method names, which can lead to name collisions. Services
-should also expose each method individually using a named export in order to aid unit testing.
-
-Service methods should be listed in alphabetical order. This keeps things tidy and avoids merge conflicts. Any helper
-functions should be defined underneath all exported methods and listed in the order in which they are used (i.e.
-chronological order, see 'Arrow functions'). Consider moving helper functions to utils and reusing them between
-services.
-
 ```js
 // services/SomethingService.js
 export default {
@@ -362,6 +393,19 @@ function helper() {
 }
 ```
 
+A service is where you commonly do AJAX requests to the back-end. All service methods should return a promise, even if
+the result is calculated synchronously. This ensures a consistent and predictable API across all services and allows
+changing to an asynchronous implementation later, without having to update service method calls all over the codebase.
+
+Services should expose themselves via a default export to allow consumers to import the service as a whole. The reason
+for this is that multiple services may expose the same generic method names, which can lead to name collisions. Services
+should also expose each method individually using a named export in order to aid unit testing.
+
+Service methods should be listed in alphabetical order. This keeps things tidy and avoids merge conflicts. Any helper
+functions should be defined underneath all exported methods and listed in the order in which they are used (i.e.
+chronological order, see 'Arrow functions'). Consider moving helper functions to utils and reusing them between
+services.
+
 ## Utils
 
 - Group related util functions under a common name.
@@ -370,6 +414,13 @@ function helper() {
 - Don't use a default export.
 - Util functions must be pure.
 - Util functions should be reusable, but have a single purpose.
+
+```js
+// utils/serialization.js
+export function upper(string) {
+  return string.toLocaleUpperCase();
+}
+```
 
 Utils is a collection of various supporting functions. It is a good idea to extract a function to a util when you are
 doing the same thing in multiple places throughout the codebase. If you do are not using the function in several files,
@@ -382,10 +433,3 @@ represent an entity as a whole but is merely a bag of related functions.
 Utility functions may never keep internal state, nor can they use services. They should be pure functions. Each exported
 function should be suitable for multiple uses (i.e. generic enough to be reused), but they should have a single well
 defined purpose (i.e. do one thing, and do it well).
-
-```js
-// utils/serialization.js
-export function upper(string) {
-  return string.toLocaleUpperCase();
-}
-```
