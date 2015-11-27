@@ -2,15 +2,20 @@
 
 This is an opinionated style guide for developing applications in ES6+ with React and/or Redux.
 
-These styles are based on current best practices in the React and Redux communities, as well as real life experience
+These styles are based on current best practices in the [React] and [Redux] communities, as well as real life experience
 with these tools in the field. It puts great focus on writing readable and maintainable code and using new JavaScript
 features in a responsible manner.
 
+[React]: https://facebook.github.io/react/
+[Redux]: redux.js.org
+
 ## Credit
 
-Much of this style guide is based on the Redux documentation and ideas from [Dan Abramov](https://github.com/gaearon)
-in particular. Furthermore, it was inspired by the [Angular Style Guide](https://github.com/johnpapa/angular-styleguide)
-by John Papa.
+Much of this style guide is based on the Redux documentation and ideas from [Dan Abramov] in particular. Furthermore, it
+was inspired by the [Angular Style Guide] by John Papa.
+
+[Dan Abramov]: https://github.com/gaearon
+[Angular Style Guide]: https://github.com/johnpapa/angular-styleguide
 
 ## ES6 and beyond
 
@@ -23,6 +28,24 @@ not a very good idea as it can quickly lead to unreadable code. With great power
 - Use `const` by default. Immutable bindings are a good starting point. Code is easier to read and comprehend because
   you can be sure the variable is never re-assigned.
 - There's very few use cases for `let`. On many occasions you can use functions like map and reduce to avoid using it.
+
+```js
+// deprecated:
+var foo = 'foo';
+
+// avoid:
+let bar = 'bar';
+
+// avoid:
+const foo = 'foo',
+  bar = 'bar',
+  baz = 'baz';
+
+// recommended:
+const foo = 'foo';
+const bar = 'bar';
+const baz = 'baz';
+```
 
 ### Variables: declaration and usage
 
@@ -63,19 +86,21 @@ to write that pesky `function` keyword again. Unfortunately for them, a fully fl
 merits. Arrow functions have two major drawbacks: they are anonymous and they don't stand out in the code.
 
 The most important thing when writing readable code is to name things. Naming your functions is the best way to document
-what your code does. A well named function releases the burden of having to read and comprehend the actual code. Another
+what your code does. A well named function relieves the burden of having to read and comprehend the actual code. Another
 drawback of anonymous functions are that they don't encourage reuse. With arrows it's too easy to write a new function
 for each use case rather then reuse more generic functions. Finally, anonymous functions commonly aren't exported, which
 makes them hard to unit test.
 
-You can of course assign your arrow function to a variable in order to 'name' it. Feel free to choose this approach if
-it fits your coding style. However, this makes regular variables and functions look extremely similar, making it harder
-to tell them apart. The benefit of function hoisting is also lost.
+Like the Angular Style Guide we recommend the use of [function hoisting] in order to put your primary code at the top
+and implementation details at the bottom. Such code is much easier to read because it's in chronologic order and focuses
+on the bigger picture.
 
-Like the Angular Style Guide we recommend the use of function
-[hoisting](https://github.com/johnpapa/angular-styleguide#function-declarations-to-hide-implementation-details) in order
-to put your primary code at the top and implementation details at the bottom. Such code is much easier to read because
-it's in chronologic order and focuses on the bigger picture.
+You can of course assign your arrow function to a variable in order to 'name' it. Feel free to choose this approach if
+it fits your coding style, but consider your less functional-oriented colleagues. However, this makes regular variables
+and functions look extremely similar, making it harder to tell them apart. You will also lose the benefits of function
+hoisting.
+
+[function hoisting]: https://github.com/johnpapa/angular-styleguide#function-declarations-to-hide-implementation-details
 
 ### Pure functions
 
@@ -83,15 +108,17 @@ it's in chronologic order and focuses on the bigger picture.
 - Don't cause any side effects by running a function.
 - Don't mutate any passed arguments, return a new value instead.
 
-A sure way to reduce code complexity and enhance testability and readability is to write your functions pure. This is
+A sure way to reduce code complexity and enhance testability and readability is to keep your functions [pure]. This is
 one of the primary aspects of functional programming. It involves writing functions in a purely input-output fashion.
 Pure functions only work with the data they are given through their arguments and return some new data, without causing
 side effects. That means they cannot access outside scope and they cannot mutate their arguments.
 
+[pure]: https://en.wikipedia.org/wiki/Pure_function
+
 ### Classes
 
 - Only use classes if you have a very good reason for it.
-- Prefer composition of inheritance.
+- Prefer composition over inheritance ("foo HAS a bar" instead of "foo IS a bar").
 - Never inherit more than one level deep.
 - Never use `instanceof` checks, use duck typing instead.
 
@@ -113,6 +140,7 @@ prefer the functional approach, which is why using classes is discouraged. Downs
 
 - Separate 'components' from 'containers'.
 - Use a function for components, a class for containers.
+- Use PascalCase for component names.
 - Put each component in its own directory, inside index.js.
 - Expose components as the default export.
 - Expose secondary functions as named exports for unit testing.
@@ -135,18 +163,16 @@ Each component or container should be inside its own directory. This reduces the
 other related files. By using `index.js` you won't have to change any import statements when you migrate from a file to
 a folder with the same name. If you import a folder, `index.js` is inferred.
 
-#### Recommended
-
 ```js
-// components/MyComponent/index.js
-export default function MyComponent(props, context) {
-  return <div {...context} {...props} />;
+// components/TodoItem/index.js
+export default function TodoItem(props, context) {
+  return <li onClick={() => context.onTodoClick()}>{props.label}</li>;
 }
 
-// containers/MyContainer/index.js
-export default class MyContainer extends React.Component {
+// containers/TodoList/index.js
+export default class TodoList extends React.Component {
   render() {
-    return <div {...this.context} {...this.props} />;
+    return <ul>{this.props.todos.map(todo => <TodoItem {...todo} />)}</ul>;
   }
 }
 ```
@@ -155,13 +181,16 @@ export default class MyContainer extends React.Component {
 
 ### Action creators
 
-Action creators are functions which return an action object. An action object contains a type and optionally a payload
-and metadata. Action objects should follow the [Flux Standard Action](https://github.com/acdlite/flux-standard-action)
-schema.
+- Group related action creators in one file.
+- Use [redux-promise] for asynchronous actions, or [redux-thunk] if you need more flexibility.
+- Expose each action creator as a named export.
+- Don't use a default export.
 
-#### Recommended
+Action creators are functions which return an action object. An action object contains a type and optionally a payload
+and metadata. Action objects should follow the [Flux Standard Action] schema.
 
 ```js
+// actions/something.js
 export function doSomething() {
   return {
     type: 'DO_SOMETHING',
@@ -173,9 +202,19 @@ export function doSomething() {
 
 We could also use the createAction helper of redux-actions, but other than enforcing FSA it doesn't do much here in
 terms of reducing boilerplate. In fact createAction is less readable and doesn't let us easily export named functions
-(exporting anonymous or arrow functions should be avoided).
+(exporting anonymous or arrow functions should be avoided). Note that only `type` is mandatory.
 
-Note that only `type` is mandatory. It should be an actionType constant.
+['Ducks' is a proposal][ducks] to bundle action creators with their reducers into a single file. Such a bundle is called
+a 'duck'. The goal is to move towards a modular application structure. So far the common practice is to group files by
+type rather than by feature. A [similar transition][modular angularjs] has happened in the Angular world. This style
+guide still follows the group-by-type pattern, but may move towards using ducks in the future.
+
+[redux-promise]: https://github.com/acdlite/redux-promise
+[redux-thunk]: https://github.com/gaearon/redux-thunk
+[Flux Standard Action]: https://github.com/acdlite/flux-standard-action
+[redux-actions]: https://github.com/acdlite/redux-actions
+[ducks]: https://github.com/erikras/ducks-modular-redux
+[modular angularjs]: https://medium.com/opinionated-angularjs/scalable-code-organization-in-angularjs-9f01b594bf06
 
 ### Reducers
 
@@ -201,6 +240,7 @@ in order to simplify unit testing.
 #### Recommended (using redux-actions)
 
 ```js
+// reducers/something.js
 import { handleActions } from 'redux-actions';
 import { Example } from '../constants/actionTypes';
 
@@ -217,7 +257,7 @@ export function doSomething(state, action) {
 
 ## Services
 
-- Always return a promise.
+- All methods should return a promise.
 - Expose the entire service object as a default export.
 - Expose Individual service methods as named exports for unit testing.
 - Declare methods in alphabetical order.
@@ -237,15 +277,14 @@ functions should be defined underneath all exported methods and listed in the or
 chronological order, see 'Arrow functions'). Consider moving helper functions to utils and reusing them between
 services.
 
-#### Recommended
-
 ```js
+// services/SomethingService.js
 export default {
   getSomething
 };
 
 export function getSomething() {
-  return new Promise(resolve => resolve('something'));
+  return new Promise(resolve => resolve(helper()));
 }
 
 function helper() {
@@ -266,10 +305,17 @@ Utils is a collection of various supporting functions. It is a good idea to extr
 doing the same thing in multiple places throughout the codebase. If you do are not using the function in several files,
 it probably should not be a util function.
 
-Utility functions should be defined in alphabetical order. Each function should be exposed using a named export. A utils
-file should not expose a default export, as it does not represent an entity as a whole but is merely a bag of related
-functions.
+Exported functions should be defined in alphabetical order to make them easy to locate and avoid merge issues. Each
+function should be exposed using a named export. A utils file should not expose a default export, as it does not
+represent an entity as a whole but is merely a bag of related functions.
 
 Utility functions may never keep internal state, nor can they use services. They should be pure functions. Each exported
 function should be suitable for multiple uses (i.e. generic enough to be reused), but they should have a single well
 defined purpose (i.e. do one thing, and do it well).
+
+```js
+// utils/serialization.js
+export function upper(string) {
+  return string.toLocaleUpperCase();
+}
+```
