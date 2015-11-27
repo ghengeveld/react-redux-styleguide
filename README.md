@@ -34,10 +34,12 @@ preferably with links to other sources. I change my mind often (for the better),
   - [Pure functions](#pure-functions)
   - [Classes](#classes)
 - [React](#react)
-  - [Components](#components)
+  - [Components and containers](#components-and-containers)
+  - [Dealing with props](#dealing-with-props)
 - [Redux](#redux)
   - [Action creators](#action-creators)
   - [Reducers](#reducers)
+  - [Connecting React components](#connecting-react-components)
 - [Services](#services)
 - [Utils](#utils)
 
@@ -101,32 +103,40 @@ use var4
 
 ### Arrow functions
 
-- Prefer named functions and name them properly.
+- Consider anonymous functions deprecated. We have arrow functions for that now.
 - Use arrow functions only as part of a larger (named) entity, not as a stand-alone entity.
 - Declare functions after using them by leveraging function hoisting.
 
-The most abused feature of ES6 is the arrow function syntax. Developers seem to think that with arrows, they never have
-to write that pesky `function` keyword again. Unfortunately for them, a fully fledged function definition still has its
-merits. Arrow functions have two major drawbacks: they are anonymous and they don't stand out in the code.
+With the addition of the arrow function syntax, we have gained a very elegant and convenient way to define anonymous
+functions. Because they use 'lexical this', usage of `this` is more predictable. Therefore you should use arrows instead
+of regular anonymous functions.
+
+Unfortunately, it's tempting to forgo regular functions entirely and switch to arrows completely. Developers seem to
+think that with arrows, they never have to write that pesky `function` keyword again. However, a fully fledged function
+definition still has its merits. Arrow functions have various benefits, but also two major drawbacks: they are anonymous
+and they don't stand out in the code.
 
 The most important thing when writing readable code is to name things. Naming your functions is the best way to document
 what your code does. A well named function relieves the burden of having to read and comprehend the actual code. Another
-drawback of anonymous functions are that they don't encourage reuse. With arrows it's too easy to write a new function
+drawback of anonymous functions is that they don't encourage reuse. With arrows it's too easy to write a new function
 for each use case rather then reuse more generic functions. Finally, anonymous functions commonly aren't exported, which
 makes them hard to unit test.
 
 That being said, arrow functions certainly have their place. They are incredibly convenient as callback functions and
 when combined with array methods (map, reduce, forEach, filter, etc.) or other functional constructs they make for very
-elegant code. In the end it's up to you to find the right balance between elegance and documentation.
+elegant code. In the end it's up to you to find the right balance between elegance and documentation. Whenever you've
+written an arrow function, take a step back and consider if using a named function instead would improve readability.
 
 Like the Angular Style Guide we recommend the use of [function hoisting] in order to put your primary code at the top
 and implementation details at the bottom. Such code is much easier to read because it's in chronologic order and focuses
-on the bigger picture.
+on the bigger picture. If you've ever implemented this rule from the Angular Style Guide, you know this will let you
+grok the contents of a file much faster.
 
 You can of course assign your arrow function to a variable in order to 'name' it. Feel free to choose this approach if
 it fits your coding style, but consider your less functional-oriented colleagues. However, this makes regular variables
 and functions look extremely similar, making it harder to tell them apart. You will also lose the benefits of function
-hoisting.
+hoisting. However there are also use cases where this style makes more sense, particularly if the function is a
+one-liner. Using a named function here would require at least three lines of code.
 
 [function hoisting]: https://github.com/johnpapa/angular-styleguide#function-declarations-to-hide-implementation-details
 
@@ -164,7 +174,7 @@ prefer the functional approach, which is why using classes is discouraged. Downs
 
 ## React
 
-### Components
+### Components and containers
 
 - Separate 'components' from 'containers'.
 - Prefer using a function for components, a class for containers.
@@ -207,6 +217,18 @@ export default class TodoList extends React.Component {
 
 [dump vs smart components]: https://medium.com/@dan_abramov/smart-and-dumb-components-7ca2f9a7c7d0
 [fsc]: https://facebook.github.io/react/blog/2015/10/07/react-v0.14.html#stateless-functional-components
+
+### Dealing with props
+
+- Start your render method with a destructuring assignment on props and/or context.
+- Use the spread operator to assign multiple attributes in one go.
+
+```js
+const { label, completed } = this.props;
+const { onTodoClick } = this.context;
+
+return <TodoItem {...{ label, completed, onTodoClick }} />
+```
 
 ## Redux
 
@@ -268,9 +290,9 @@ switch statement and a default handler. Another benefit is that is enforces the 
 final reducer should be exposed as the default export. Individual handler functions should be exposed as named exports
 in order to simplify unit testing.
 
-#### Recommended (using redux-actions)
-
 ```js
+// using redux-actions
+
 // reducers/something.js
 import { handleActions } from 'redux-actions';
 import { Example } from '../constants/actionTypes';
@@ -285,6 +307,23 @@ export function doSomething(state, action) {
   return { ...state, value: action.payload.value };
 }
 ```
+
+### Connecting React components
+
+- Always use a state selector function that returns the minimal state subset you need.
+- Expose the connected component as default export.
+- Expose the unconnected component as named export for unit testing.
+
+```js
+export class TodoList extends React.Component { ... }
+
+const stateSelector = ({ todos, filters }) => ({ todos, filters });
+export default connect(stateSelector)(TodoList);
+```
+
+The [reselect] library works well for more complex selectors and to achieve better performance.
+
+[reselect]: https://github.com/rackt/reselect
 
 ## Services
 
