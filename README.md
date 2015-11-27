@@ -17,6 +17,30 @@ was inspired by the [Angular Style Guide] by John Papa.
 [Dan Abramov]: https://github.com/gaearon
 [Angular Style Guide]: https://github.com/johnpapa/angular-styleguide
 
+## Contributing
+
+This guide is opinionated. You'll probably disagree on some points. Feel free to [open an issue] or file a pull request
+if you think something should be rephrased or changed. Please include a detailed reasoning about why your way is better,
+preferably with links to other sources. I change my mind often (for the better), so please convince me.
+
+[open an issue]: https://github.com/ghengeveld/react-redux-styleguide/issues/new
+
+## Table of Contents
+
+- [ES6 and beyond](#es6-and-beyond)
+  - [Variables: var, let and const](#variables-var-let-and-const)
+  - [Variables: declaration and usage](#variables-declaration-and-usage)
+  - [Arrow functions](#arrow-functions)
+  - [Pure functions](#pure-functions)
+  - [Classes](#classes)
+- [React](#react)
+  - [Components](#components)
+- [Redux](#redux)
+  - [Action creators](#action-creators)
+  - [Reducers](#reducers)
+- [Services](#services)
+- [Utils](#utils)
+
 ## ES6 and beyond
 
 Developers which have recently discovered the power of ES6 often feel compelled to use them on every occasion. This is
@@ -78,7 +102,7 @@ use var4
 ### Arrow functions
 
 - Prefer named functions and name them properly.
-- Use arrow functions only as part of a larger entity, never as a stand-alone entity.
+- Use arrow functions only as part of a larger (named) entity, not as a stand-alone entity.
 - Declare functions after using them by leveraging function hoisting.
 
 The most abused feature of ES6 is the arrow function syntax. Developers seem to think that with arrows, they never have
@@ -90,6 +114,10 @@ what your code does. A well named function relieves the burden of having to read
 drawback of anonymous functions are that they don't encourage reuse. With arrows it's too easy to write a new function
 for each use case rather then reuse more generic functions. Finally, anonymous functions commonly aren't exported, which
 makes them hard to unit test.
+
+That being said, arrow functions certainly have their place. They are incredibly convenient as callback functions and
+when combined with array methods (map, reduce, forEach, filter, etc.) or other functional constructs they make for very
+elegant code. In the end it's up to you to find the right balance between elegance and documentation.
 
 Like the Angular Style Guide we recommend the use of [function hoisting] in order to put your primary code at the top
 and implementation details at the bottom. Such code is much easier to read because it's in chronologic order and focuses
@@ -139,7 +167,7 @@ prefer the functional approach, which is why using classes is discouraged. Downs
 ### Components
 
 - Separate 'components' from 'containers'.
-- Use a function for components, a class for containers.
+- Prefer using a function for components, a class for containers.
 - Use PascalCase for component names.
 - Put each component in its own directory, inside index.js.
 - Expose components as the default export.
