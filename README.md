@@ -348,7 +348,7 @@ they receive as arguments. In other words they must take the data they are given
 mutation. This can often be achieved by using the array and object spread operators.
 
 The simplest way to create a reducer is to use the handleActions method of redux-actions. This avoids having to write a
-switch statement and a default handler. Another benefit is that is enforces the use of FSA-compliant action objects. The
+switch statement and a default handler. Another benefit is that it enforces the use of FSA-compliant action objects. The
 final reducer should be exposed as the default export. Individual handler functions should be exposed as named exports
 in order to simplify unit testing.
 
@@ -423,7 +423,7 @@ export function upper(string) {
 ```
 
 Utils is a collection of various supporting functions. It is a good idea to extract a function to a util when you are
-doing the same thing in multiple places throughout the codebase. If you do are not using the function in several files,
+doing the same thing in multiple places throughout the codebase. If you are not using the function in several files,
 it probably should not be a util function.
 
 Exported functions should be defined in alphabetical order to make them easy to locate and avoid merge issues. Each
@@ -431,5 +431,5 @@ function should be exposed using a named export. A utils file should not expose 
 represent an entity as a whole but is merely a bag of related functions.
 
 Utility functions may never keep internal state, nor can they use services. They should be pure functions. Each exported
-function should be suitable for multiple uses (i.e. generic enough to be reused), but they should have a single well
-defined purpose (i.e. do one thing, and do it well).
+function should be suitable for multiple uses (i.e. generic enough to be reused), but they should have a single well-defined
+purpose (i.e. do one thing, and do it well).
